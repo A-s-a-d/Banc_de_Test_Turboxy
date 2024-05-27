@@ -7,6 +7,8 @@
         "iterator": "cpp",
         "string_view": "cpp",
         "initializer_list": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "limits": "cpp",
+        "type_traits": "cpp"
     }
 }

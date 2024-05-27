@@ -16,13 +16,12 @@ float Capteur_de_temperature::GetTemperature()
     float mVout = quantum_ADC * Num_VADC_Temperature; // variable qui stocke la valeur de tension lu.
     float Temperature_kelvin = mVout / 10;
     float Temperature_celcius = Temperature_kelvin - 273.15;
-    Serial.print("Temperature en celcius de: ");
-    Serial.println(Temperature_celcius, 5);
     _temperature = Temperature_celcius;
     return Temperature_celcius;
 }
 
 void Capteur_de_temperature::display_temp_Serial()
 {
-    printf("la Temperature est %f", _temperature);
+    Serial.print("la Temperature de capteur est ");
+    Serial.println(_temperature);
 }
