@@ -2,8 +2,8 @@
 #define COURANT_H
 
 #include <Arduino.h>
-#define pin_current_1 3
-#define pin_current_2 4
+#define pin_current_1 4
+#define pin_current_2 5
 #define value_5V 4.8
 
 class Courant

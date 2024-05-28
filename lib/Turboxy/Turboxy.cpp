@@ -64,7 +64,7 @@ void Turboxy::_Turboxy_get_data()
     uint8_t error_count = 0x00;
     _Turboxy_test_communication();
     delay(10);
-    while (error_count <= 5)
+    if (error_count <= 5)
     {
         Wire.requestFrom(adress_write, 5);
         _table_data_TURBOXY[0] = Wire.read();
@@ -81,10 +81,14 @@ void Turboxy::_Turboxy_get_data()
         {
             Serial.println("Communication ok at  Turboxy recive data 0x02");
             error = 0xFF;
-            break;
+            error_count = 6;
         }
         else
         {
+            _DATA_TYPE_RECIVED_TURBOXY = error_data_type;
+            _DATA_CHLORE_RECIVED_TURBOXY = error_chlore;
+            _DATA_FREQUENCY_RECIVED_TURBOXY = error_frequency;
+            _DATA_TEMPERATURE_RECIVED_TURBOXY = error_temperature;
             Serial.println(" communication error Turboxy recive data or other error ");
             error_count++;
             delay(100);
@@ -117,6 +121,7 @@ uint8_t Turboxy::GET_FREQUENCY()
 
 float Turboxy::GET_TEMPERATURE()
 {
+
     _Turboxy_get_data();
     return _DATA_TEMPERATURE_RECIVED_TURBOXY;
 }

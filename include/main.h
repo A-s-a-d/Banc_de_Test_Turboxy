@@ -14,18 +14,24 @@ pin 4 generate for current generator 2*/
 #include "START_BUTTON.h"
 #include "Turboxy.h"
 #include "Courant.h"
+#include "Servo_rack.h"
+#include "Button_pression.h"
 #define WIRE Wire
 
 #define interval_wait_get_temperature 500
-#define interval_wait_current 2000
+#define interval_wait_current 500
+
 bool Test_Temperature_Valid = 0;
 bool Test_courant1_Valid = 0;
 bool Test_courant2_Valid = 0;
 bool test_current_2 = 0;
 bool test_current_1 = 0;
-uint8_t etape = 0;
+uint8_t etape_test_I_T = 0;
+uint8_t etape_test_flux = 0;
+
 float DATA_TEMPERATURE_RECIVED_TURBOXY = 0.0;
 
 #define interval_wait_message_press_button 1000
+#define interval_wait_message_pressure_button 500
 
 #endif

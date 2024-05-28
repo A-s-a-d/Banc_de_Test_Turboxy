@@ -9,6 +9,7 @@
         "initializer_list": "cpp",
         "unordered_map": "cpp",
         "limits": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "*.tcc": "cpp"
     }
 }

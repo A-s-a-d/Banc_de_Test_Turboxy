@@ -9,6 +9,11 @@
 #define adress_write 0x01
 #define adress_read 0x02
 
+#define error_temperature -1
+#define error_chlore -1
+#define error_frequency 0xFF
+#define error_data_type 0xFF
+
 class Turboxy
 {
 private:
