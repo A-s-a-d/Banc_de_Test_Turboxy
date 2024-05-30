@@ -16,6 +16,8 @@ pin 4 generate for current generator 2*/
 #include "Courant.h"
 #include "Servo_rack.h"
 #include "Button_pression.h"
+#include "valve.h"
+#include "A10_Pressure_Sensor.h"
 #define WIRE Wire
 
 #define interval_wait_get_temperature 500
@@ -34,4 +36,10 @@ float DATA_TEMPERATURE_RECIVED_TURBOXY = 0.0;
 #define interval_wait_message_press_button 1000
 #define interval_wait_message_pressure_button 500
 
+#define interval_wait_pressure_increase 10000
+#define interval_wait_pressure 10000
+#define interval_wait_positioning_valves 10000
+
+#define servo_position_repos 15
+#define servo_position_test 20
 #endif

@@ -7,22 +7,26 @@ Turboxy turboxy;
 Courant Gen_courant;
 Servo_rack servo_sonde;
 BUTTON_PRESSION B_Pression;
+valve Electrovanne;
+A10_Pressure_Sensor Pressure_Sensor;
 
 // ++++++++++++++++++++++++++++++++++ SETUP +++++++++++++++++++++++++++++++++++++
 void setup()
 {
+  
   WIRE.begin();
   Serial.begin(9600);
-  while (!Serial)
-    delay(10);
+  // while (!Serial)
+  //   delay(10);
 
   begin_ADC();
   startButton.begin_button_interruption();
   B_Pression.begin_interruption();
-  Serial.println("Setup"); // affichage pour dire que setup a bien ete executé
-  start_test = 100;
   Gen_courant.begin(390000, 25500);
   servo_sonde.begin();
+  Electrovanne.begin();
+  Serial.println("Setup"); // affichage pour dire que setup a bien ete executé
+  start_test = 100;
 }
 
 // ++++++++++++++++++++++++++++++++++ LOOP  +++++++++++++++++++++++++++++++++++++
@@ -32,7 +36,7 @@ void loop()
   {
   case 0:
   {
-    servo_sonde.move_in_place(0);
+    servo_sonde.move_in_place(servo_position_repos);
     Gen_courant.Gen_courant_2_stop();
     Gen_courant.Gen_courant_1_stop();
 
@@ -57,7 +61,7 @@ void loop()
   case 1:
   {
     Serial.println("moving servo");
-    servo_sonde.move_in_place(10);
+    servo_sonde.move_in_place(servo_position_test);
 
     etape_test_I_T = 2;
   }
@@ -191,7 +195,7 @@ void loop()
   {
     Gen_courant.Gen_courant_1_stop();
     Gen_courant.Gen_courant_2_stop();
-    servo_sonde.move_in_place(0);
+    servo_sonde.move_in_place(servo_position_repos);
     etape_test_I_T = 0;
   }
   break;
@@ -204,6 +208,8 @@ void loop()
   {
   case 0:
   {
+    Electrovanne.IN_OFF();
+    Electrovanne.OUT_OFF();
     static uint32_t nextTime0_0 = 0;
 
     if (millis() - nextTime0_0 >= interval_wait_message_pressure_button)
@@ -225,14 +231,53 @@ void loop()
   case 1:
   {
     static uint32_t nextTime0_1 = 0;
-    if (millis() - nextTime0_1 >= interval_wait_message_pressure_button)
+    if (millis() - nextTime0_1 >= interval_wait_pressure_increase)
     {
       nextTime0_1 = millis();
-      Serial.println("pressure tested\n\n\n\n");
     }
+
+    Serial.println("filling the Air");
+    Electrovanne.IN_ON();
+    Electrovanne.OUT_OFF();
     etape_test_flux = 2;
   }
   break;
+  case 2:
+  {
+    static uint32_t nextTime0_2 = 0;
+    if (millis() - nextTime0_2 >= interval_wait_positioning_valves)
+    {
+    }
+
+    nextTime0_2 = millis();
+    Serial.println("start testing pressure");
+
+    Electrovanne.IN_OFF();
+    Electrovanne.OUT_OFF();
+    etape_test_flux = 3;
+  }
+  break;
+  case 3:
+  {
+    static float Pressure = 0;
+    static uint8_t pressure_mesure_count = 0;
+    Electrovanne.IN_OFF();
+    Electrovanne.OUT_OFF();
+
+    static uint32_t nextTime0_3 = 0;
+    if (millis() - nextTime0_3 >= interval_wait_pressure)
+    {
+      nextTime0_3 = millis();
+      Serial.println("testing pressure");
+      Pressure = Pressure_Sensor.get_pressure_Bar();
+    }
+    if (pressure_mesure_count >= 20)
+    {
+      etape_test_flux = 4;
+    }
+  }
+  break;
+
   default:
     etape_test_flux = 0;
     break;

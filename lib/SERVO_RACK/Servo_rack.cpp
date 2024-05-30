@@ -9,7 +9,7 @@ Servo_rack::Servo_rack()
 void Servo_rack::begin()
 {
     attach(Servo_pin);
-    move_in_place(0);
+    move_in_place(20);
 }
 
 void Servo_rack::move_in_place(float distance)
