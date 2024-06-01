@@ -13,6 +13,7 @@
 #define error_chlore -1
 #define error_frequency 0xFF
 #define error_data_type 0xFF
+#define offset 5000
 
 class Turboxy
 {
@@ -35,6 +36,7 @@ public:
     Turboxy(/* args */);
     void Turboxy_Display_data();
     void Turboxy_Accquire_data();
+    bool begin();
 
     uint8_t GET_TYPE();
     float GET_CHLORE();

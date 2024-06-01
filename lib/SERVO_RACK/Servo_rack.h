@@ -5,8 +5,11 @@
 #include <Servo.h>
 
 #define Servo_pin 6
-#define distance_max 25.5
-#define distance_min 0
+#define distance_max 20
+#define distance_min 10
+
+#define servo_position_repos 10
+#define servo_position_test 18.1
 
 class Servo_rack : public Servo
 {

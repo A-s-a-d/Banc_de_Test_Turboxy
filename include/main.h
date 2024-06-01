@@ -18,10 +18,13 @@ pin 4 generate for current generator 2*/
 #include "Button_pression.h"
 #include "valve.h"
 #include "A10_Pressure_Sensor.h"
+#include "Adafruit_SSD1306.h"
+#include "OLED.h"
 #define WIRE Wire
 
-#define interval_wait_get_temperature 500
-#define interval_wait_current 500
+#define interval_wait_get_temperature 2000
+#define interval_wait_current 1000
+#define nbr_de_mesures_courant 30
 
 bool Test_Temperature_Valid = 0;
 bool Test_courant1_Valid = 0;
@@ -36,10 +39,8 @@ float DATA_TEMPERATURE_RECIVED_TURBOXY = 0.0;
 #define interval_wait_message_press_button 1000
 #define interval_wait_message_pressure_button 500
 
-#define interval_wait_pressure_increase 10000
-#define interval_wait_pressure 10000
-#define interval_wait_positioning_valves 10000
+#define interval_wait_pressure_increase 1000
+#define interval_wait_pressure 1000
+#define interval_wait_positioning_valves 1000
 
-#define servo_position_repos 15
-#define servo_position_test 20
 #endif

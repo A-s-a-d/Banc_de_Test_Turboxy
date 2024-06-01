@@ -9,7 +9,7 @@ Servo_rack::Servo_rack()
 void Servo_rack::begin()
 {
     attach(Servo_pin);
-    move_in_place(20);
+    move_in_place(servo_position_repos);
 }
 
 void Servo_rack::move_in_place(float distance)
@@ -24,16 +24,16 @@ void Servo_rack::move_in_place(float distance)
     {
         _degree = _equation_degree_info_distance(_distance);
         
-        write(_degree);
+        write((int)_degree);
         delay(1000);
     }
 }
 
 float Servo_rack::_equation_distance_info_degree(float degree)
 {
-    return 28 - 0.1555556 * degree;
+    return 28.0 - 0.1555556 * degree;
 }
 float Servo_rack::_equation_degree_info_distance(float distance)
 {
-    return 180 - 6.42857 * distance;
+    return 180.0 - 6.42857 * distance;
 }
