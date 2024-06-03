@@ -150,6 +150,29 @@ void Oled::temperature(float temperature_turboxy, float temperature_capteur)
 
     display.display();
 }
+void Oled::temperature_validation(bool valid)
+{
+    if (valid == 0)
+    {
+        display.clearDisplay();
+        display.setFont();
+        display.setTextSize(2);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 10);
+        display.print("Temperature\nerreur");
+        display.display();
+    }
+    else
+    {
+        display.clearDisplay();
+        display.setFont();
+        display.setTextSize(2);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 10);
+        display.print("Temperature\nOK");
+        display.display();
+    }
+}
 
 void Oled::pressbutton_1()
 {
@@ -171,6 +194,45 @@ void Oled::Moving_Servo()
     display.setCursor(0, 0);
     display.print("Moving\nServo");
     display.display();
+}
+
+void Oled::erreur_communicatio_turboxy()
+{
+    display.clearDisplay();
+    display.setFont();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.print("Erreur\ncomm");
+    display.display();
+}
+void Oled::courant_validation(float courant_reference, bool valid)
+{
+    if (valid == 1)
+    {
+        display.clearDisplay();
+        display.setFont();
+        display.setTextSize(2);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 10);
+        display.print("courant\n");
+        display.print(courant_reference);
+        display.print("OK");
+        display.display();
+    }
+    else
+    {
+
+        display.clearDisplay();
+        display.setFont();
+        display.setTextSize(2);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 10);
+        display.print("courant\n");
+        display.print(courant_reference);
+        display.print("erreur");
+        display.display();
+    }
 }
 
 void Oled::current(float current_turboxy, float current_generated)
@@ -201,11 +263,49 @@ void Oled::current(float current_turboxy, float current_generated)
 
     display.setCursor(70, 18);
     display.setTextSize(1);
-    display.print("Capteur:");
+    display.print("generé:");
 
     display.setCursor(70, 42);
     display.setTextSize(1);
     display.print(current_generated, 1);
+    display.print(" A");
+
+    display.display();
+}
+
+void Oled::chlore(float chlore_turboxy, float chlore_generated)
+{
+    display.clearDisplay();
+    display.setFont(&FreeMono9pt7b);
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 10);
+    display.print("Chlore");
+
+    display.drawRect(0, 16, SCREEN_WIDTH, SCREEN_HEIGHT - 16, SSD1306_WHITE);
+
+    display.drawLine(SCREEN_WIDTH / 2, 16, SCREEN_WIDTH / 2, SCREEN_HEIGHT, SSD1306_WHITE);
+
+    display.drawLine(0, 28, 128, 28, SSD1306_WHITE);
+
+    display.setFont(NULL);
+
+    display.setCursor(5, 18);
+    display.setTextSize(1);
+    display.print("Turboxy:");
+
+    display.setCursor(6, 42);
+    display.setTextSize(1);
+    display.print(chlore_turboxy, 1);
+    display.print(" A");
+
+    display.setCursor(70, 18);
+    display.setTextSize(1);
+    display.print("generé:");
+
+    display.setCursor(70, 42);
+    display.setTextSize(1);
+    display.print(chlore_generated, 1);
     display.print(" A");
 
     display.display();
@@ -225,7 +325,6 @@ void Oled::pressbutton_2()
 void Oled::pressure(float pression_depart, float pression_actuelle)
 {
 
-    
     display_2.clearDisplay();
     display_2.setFont(&FreeMono9pt7b);
     display_2.setTextSize(1);
@@ -260,5 +359,4 @@ void Oled::pressure(float pression_depart, float pression_actuelle)
     display_2.print(" bar");
 
     display_2.display();
-
 }

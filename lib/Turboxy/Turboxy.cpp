@@ -97,7 +97,11 @@ void Turboxy::_Turboxy_get_data()
         _table_data_TURBOXY[4] = Wire.read();
         error = Wire.endTransmission();
         _DATA_TYPE_RECIVED_TURBOXY = _table_data_TURBOXY[0];
-        _DATA_CHLORE_RECIVED_TURBOXY = ((((_table_data_TURBOXY[2] << 8) + _table_data_TURBOXY[1]) - offset) / 100.0);
+
+        _DATA_CHLORE_RECIVED_TURBOXY = (_table_data_TURBOXY[2] << 8) | _table_data_TURBOXY[1];
+
+        _DATA_CURRENT_RECIVED_TURBOXY = _DATA_CHLORE_RECIVED_TURBOXY * 1.0;
+
         _DATA_FREQUENCY_RECIVED_TURBOXY = _table_data_TURBOXY[3];
         _DATA_TEMPERATURE_RECIVED_TURBOXY = _table_data_TURBOXY[4] / 2.0;
         if (error == 0)
@@ -134,6 +138,12 @@ float Turboxy::GET_CHLORE()
 {
     _Turboxy_get_data();
     return _DATA_CHLORE_RECIVED_TURBOXY;
+}
+
+float Turboxy::GET_CURRENT()
+{
+    _Turboxy_get_data();
+    return _DATA_CHLORE_RECIVED_TURBOXY * 40;
 }
 
 uint8_t Turboxy::GET_FREQUENCY()

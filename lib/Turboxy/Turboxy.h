@@ -24,8 +24,9 @@ private:
     uint8_t _table_data_TURBOXY[5]; // Tableau pour stocker les donnees recu par TURBOXY
     // 1st DATA = 0x56 = data type
     uint8_t _DATA_TYPE_RECIVED_TURBOXY;
-    // 2nd & 3rd DATA = Chlore in µA
-    float _DATA_CHLORE_RECIVED_TURBOXY;
+    // 2nd & 3rd DATA = Chlore in ppm*100
+    int _DATA_CHLORE_RECIVED_TURBOXY;
+    float _DATA_CURRENT_RECIVED_TURBOXY;
     // 4th DATA = Frequency in Hz
     uint8_t _DATA_FREQUENCY_RECIVED_TURBOXY;
     // 5th DATA = Temperature * 2
@@ -42,6 +43,7 @@ public:
     float GET_CHLORE();
     uint8_t GET_FREQUENCY();
     float GET_TEMPERATURE();
+    float GET_CURRENT();
 };
 
 #endif

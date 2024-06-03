@@ -17,7 +17,6 @@
 #define adress_ecran_1 0x3C
 #define adress_ecran_2 0x3D
 
-
 class Oled
 {
 public:
@@ -26,15 +25,20 @@ public:
     void logo_s1();
     void logo_s2();
     void temperature(float temperature_turboxy, float tmperature_capteur);
+    void temperature_validation(bool valid);
     void pressbutton_1();
     void pressbutton_2();
     void pressure(float pression_depart, float pression_actuelle);
     void Moving_Servo();
     void current(float current_turboxy, float current_generated);
+    void chlore(float chlore_turboxy, float chlore_generated);
+    void erreur_communicatio_turboxy();
+    void courant_validation(float courant_reference, bool valid);
+    
+
 private:
     Adafruit_SSD1306 display;
     Adafruit_SSD1306 display_2;
 };
-
 
 #endif

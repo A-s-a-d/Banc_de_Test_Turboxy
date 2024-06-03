@@ -24,7 +24,7 @@ pin 4 generate for current generator 2*/
 
 #define interval_wait_get_temperature 2000
 #define interval_wait_current 1000
-#define nbr_de_mesures_courant 30
+#define nbr_de_mesures_courant 10
 
 bool Test_Temperature_Valid = 0;
 bool Test_courant1_Valid = 0;
@@ -33,6 +33,15 @@ bool test_current_2 = 0;
 bool test_current_1 = 0;
 uint8_t etape_test_I_T = 0;
 uint8_t etape_test_flux = 0;
+bool problem_com_turboxy = 0;
+bool validation_courant_finale = 0;
+
+static float Courant1_Reference_test = 0;
+static float Courant2_Reference_test = 0;
+bool validation_courant_1_finale = 0;
+bool validation_courant_2_finale = 0;
+
+#define interval_display 1000
 
 float DATA_TEMPERATURE_RECIVED_TURBOXY = 0.0;
 
@@ -41,6 +50,6 @@ float DATA_TEMPERATURE_RECIVED_TURBOXY = 0.0;
 
 #define interval_wait_pressure_increase 1000
 #define interval_wait_pressure 1000
-#define interval_wait_positioning_valves 1000
+#define interval_wait_positioning_valves 3000
 
 #endif
