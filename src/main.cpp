@@ -32,7 +32,8 @@ void setup()
 
   display.begin();
   delay(100);
-  display.logo();
+  display.logo_s1();
+  display.logo_s2();
   delay(1000);
 }
 
@@ -42,7 +43,6 @@ void loop()
   bool do_ = 1;
   while (do_ == 1)
   {
-
     switch (etape_test_I_T) // cycle teste
     {
     case 0:
@@ -219,6 +219,7 @@ void loop()
     {
     case 0:
     {
+      display.pressbutton_2();
       Electrovanne.IN_OFF();
       Electrovanne.OUT_OFF();
       static uint32_t nextTime0_0 = 0;
@@ -258,11 +259,10 @@ void loop()
       static uint32_t nextTime0_2 = 0;
       if (millis() - nextTime0_2 >= interval_wait_positioning_valves)
       {
+        nextTime0_2 = millis();
       }
 
-      nextTime0_2 = millis();
       Serial.println("start testing pressure");
-
       Electrovanne.IN_OFF();
       Electrovanne.OUT_OFF();
       etape_test_flux = 3;
@@ -270,6 +270,8 @@ void loop()
     break;
     case 3:
     {
+      display.pressure(2.0, 1.9);
+
       static float Pressure = 0;
       static uint8_t pressure_mesure_count = 0;
       Electrovanne.IN_OFF();
@@ -286,7 +288,7 @@ void loop()
         Serial.println(" mBar");
         pressure_mesure_count++;
       }
-      if (pressure_mesure_count >= 5)
+      if (pressure_mesure_count >= 10)
       {
         etape_test_flux = 4;
         pressure_mesure_count = 0;
