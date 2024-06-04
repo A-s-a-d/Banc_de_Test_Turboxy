@@ -206,6 +206,7 @@ void Oled::erreur_communicatio_turboxy()
     display.print("Erreur\ncomm");
     display.display();
 }
+
 void Oled::courant_validation(float courant_reference, bool valid)
 {
     if (valid == 1)
@@ -217,7 +218,7 @@ void Oled::courant_validation(float courant_reference, bool valid)
         display.setCursor(0, 10);
         display.print("courant\n");
         display.print(courant_reference);
-        display.print("OK");
+        display.print("\nOK");
         display.display();
     }
     else
@@ -359,4 +360,100 @@ void Oled::pressure(float pression_depart, float pression_actuelle)
     display_2.print(" bar");
 
     display_2.display();
+}
+
+void Oled::fillingair()
+{
+    display_2.clearDisplay();
+    display_2.setFont();
+    display_2.setTextSize(3);
+    display_2.setTextColor(SSD1306_WHITE);
+    display_2.setCursor(0, 0);
+    display_2.print("filling\n Air");
+    display_2.display();
+}
+
+void Oled::pression_validation(float delta, bool valid)
+{
+    display_2.clearDisplay();
+    display_2.setFont();
+    display_2.setTextSize(2);
+    display_2.setTextColor(SSD1306_WHITE);
+    display_2.setCursor(0, 0);
+    display_2.print("delta :");
+    display_2.print(delta, 2);
+
+    if (valid == 1)
+    {
+        display_2.setCursor(0, 40);
+        display_2.print("Valid");
+    }
+    else
+    {
+        display_2.setCursor(0, 40);
+        display_2.print("non Valid");
+    }
+
+    display_2.display();
+}
+
+void Oled::frequency_validation(uint8_t frequency, bool valid)
+{
+    display_2.clearDisplay();
+    display_2.setFont();
+    display_2.setTextSize(2);
+    display_2.setTextColor(SSD1306_WHITE);
+    display_2.setCursor(0, 0);
+    display_2.print("frequency :\n");
+    display_2.print(frequency);
+
+    if (valid == 1)
+    {
+        display_2.setCursor(0, 40);
+        display_2.print("Valid");
+    }
+    else
+    {
+        display_2.setCursor(0, 40);
+        display_2.print("non Valid");
+    }
+
+    display_2.display();
+}
+
+void Oled::affichage_resultats(bool valid_temp, bool valid_courant1, bool valid_courant2)
+{
+    display.clearDisplay();
+    display.setFont();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+
+    if (valid_temp == 1)
+    {
+        display.print("Temp valid");
+    }
+    else
+    {
+        display.print("Temp valid");
+    }
+
+    if (valid_courant1 == 1)
+    {
+        display.print("\ncourant1 Valid");
+    }
+    else
+    {
+        display.print("\ncourant1 non Valid");
+    }
+
+    if (valid_courant2 == 1)
+    {
+        display.print("\ncourant2 valid");
+    }
+    else
+    {
+        display.print("\ncourant2 non valid");
+    }
+    display.display();
 }

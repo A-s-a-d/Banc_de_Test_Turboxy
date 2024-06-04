@@ -34,7 +34,10 @@ public:
     void chlore(float chlore_turboxy, float chlore_generated);
     void erreur_communicatio_turboxy();
     void courant_validation(float courant_reference, bool valid);
-    
+    void fillingair();
+    void pression_validation(float delta, bool valid);
+    void frequency_validation(uint8_t frequency, bool valid);
+    void affichage_resultats(bool valid_temp, bool valid_courant1, bool valid_courant2);
 
 private:
     Adafruit_SSD1306 display;

@@ -112,14 +112,17 @@ void Turboxy::_Turboxy_get_data()
         }
         else
         {
-            _DATA_TYPE_RECIVED_TURBOXY = error_data_type;
-            _DATA_CHLORE_RECIVED_TURBOXY = error_chlore;
-            _DATA_FREQUENCY_RECIVED_TURBOXY = error_frequency;
-            _DATA_TEMPERATURE_RECIVED_TURBOXY = error_temperature;
             // Serial.println(" communication error Turboxy recive data or other error ");
             error_count++;
             delay(100);
         }
+    }
+    else
+    {
+        _DATA_TYPE_RECIVED_TURBOXY = error_data_type;
+        _DATA_CHLORE_RECIVED_TURBOXY = error_chlore;
+        _DATA_FREQUENCY_RECIVED_TURBOXY = error_frequency;
+        _DATA_TEMPERATURE_RECIVED_TURBOXY = error_temperature;
     }
 }
 

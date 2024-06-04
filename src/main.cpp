@@ -48,10 +48,10 @@ void loop()
     servo_sonde.move_in_place(servo_position_repos);
     Gen_courant.Gen_courant_2_stop();
     Gen_courant.Gen_courant_1_stop();
-    static uint32_t nextTime0 = 0;
+    static unsigned long nextTime0 = 0;
     if (millis() - nextTime0 >= interval_wait_message_press_button)
     {
-      nextTime0 += interval_wait_message_press_button;
+      nextTime0 = millis();
       Serial.println("waiting for test to start");
     }
     if (start_test == 1)
@@ -63,6 +63,17 @@ void loop()
       etape_test_I_T = 0;
     }
     start_test = 0;
+
+    courant1.Courant1_Reference_test = 0;
+    courant1.moyenne = 0;
+    courant1.validation_courant_1_finale = 0;
+
+    courant2.Courant2_Reference_test = 0;
+    courant2.moyenne = 0;
+    courant2.validation_courant_2_finale = 0;
+
+    temperature.nbr_valid = 0;
+    temperature.valid = 0;
   }
   break;
   case 1:
@@ -77,21 +88,16 @@ void loop()
   case 2:
   {
     static uint8_t test_temp_count = 0;
-    static uint32_t nextTime1 = 0;
-    static bool valid = 0;
-    static uint8_t nbr_valid = 0;
-    static uint32_t nexttime_display = 0;
-    static uint32_t seconds_since_display = 0;
+    static unsigned long nextTime1 = 0;
 
-    // Check if the delay passed
     if (test_temp_count < 5)
     {
       if (millis() - nextTime1 >= interval_wait_get_temperature)
       {
         nextTime1 = millis(); // Update the next time to the current time
         float Temperature_Reference_test = cap_temp.GetTemperature();
-
         float Temperature_Turboxy = turboxy.GET_TEMPERATURE();
+
         if (Temperature_Turboxy >= 0) // -1 = error communication
         {
           Serial.print("la temperature de Turboxy est ");
@@ -99,7 +105,7 @@ void loop()
           cap_temp.display_temp_Serial();
 
           // Check the temperature difference
-          if (Temperature_Turboxy > Temperature_Reference_test + 3.0 || Temperature_Turboxy < Temperature_Reference_test - 3.0)
+          if (abs(Temperature_Turboxy - Temperature_Reference_test) > 4.0)
           {
             Test_Temperature_Valid = 0;
             Serial.println("test temperature non Valid");
@@ -108,7 +114,7 @@ void loop()
           {
             Test_Temperature_Valid = 1;
             Serial.println("****************test temperature Valid");
-            nbr_valid++;
+            temperature.nbr_valid++;
           }
           test_temp_count++;
         }
@@ -122,31 +128,9 @@ void loop()
     }
     else
     {
-      if (nbr_valid < 4)
-      {
-        valid = 0;
-      }
-      else
-      {
-        valid = 1;
-      }
-
-      const uint16_t display_time = 1000;
-
-      if ((millis() - nexttime_display >= display_time) * (seconds_since_display < 5))
-      {
-        nexttime_display = millis(); // Update the next time to the current time
-        display.temperature_validation(valid);
-        seconds_since_display++;
-      }
-      else if (seconds_since_display >= 5)
-      {
-        etape_test_I_T = 3;
-        test_temp_count = 0;
-        seconds_since_display = 0;
-        nbr_valid = 0;
-        valid = 0;
-      }
+      temperature.valid = (temperature.nbr_valid >= 4);
+      etape_test_I_T = 21;
+      test_temp_count = 0; // reset variable for next  test
     }
 
     if (problem_com_turboxy == 1)
@@ -155,65 +139,93 @@ void loop()
       problem_com_turboxy = 0;
     }
   }
-
   break;
+
+  case 21:
+  {
+    static unsigned long nexttime_display = 0;
+    static uint8_t seconds_since_display = 0;
+
+    if (millis() - nexttime_display >= interval_display)
+    {
+      nexttime_display = millis();
+      display.temperature_validation(temperature.valid);
+      seconds_since_display++;
+    }
+
+    if (seconds_since_display >= 5)
+    {
+      etape_test_I_T = 3;
+      seconds_since_display = 0;
+    }
+  }
+  break;
+
   case 3:
   {
     static float somme_moyenne_courant_1 = 0;
     static uint8_t test_current1_count = 0;
-    static uint32_t nextTime2 = 0;
-    static uint8_t problem_com_turboxy = 0;
+    static unsigned long nextTime2 = 0;
 
     Gen_courant.Gen_courant_2_stop();
 
     if (test_current1_count >= nbr_de_mesures_courant)
     {
-      etape_test_I_T = 31;
-      test_current1_count = 0;
-      somme_moyenne_courant_1 = 0; // Reset sum for next round of tests
-      Gen_courant.Gen_courant_2_stop();
 
-      float moyenne_courant = somme_moyenne_courant_1 / nbr_de_mesures_courant;
-      if (moyenne_courant > Courant1_Reference_test + 5 || moyenne_courant < Courant1_Reference_test - 5)
+      for (uint8_t i = 2; i <= courant1.nbr_values; i++)
       {
-        validation_courant_1_finale = 0;
+        somme_moyenne_courant_1 += courant1.tableval[i];
+      }
+      courant1.moyenne = somme_moyenne_courant_1 / (courant1.nbr_values - 2);
+
+      if (abs(courant1.moyenne - courant1.Courant1_Reference_test) > tolerence_courant)
+      {
+        courant1.validation_courant_1_finale = 0;
       }
       else
       {
-        validation_courant_1_finale = 1;
+        courant1.validation_courant_1_finale = 1;
       }
+
+      etape_test_I_T = 31;
+      somme_moyenne_courant_1 = 0;
+      test_current1_count = 0;
+
+      Gen_courant.Gen_courant_2_stop();
     }
     else if (millis() - nextTime2 >= interval_wait_current)
     {
       nextTime2 = millis(); // Update nextTime2 to the current time
       Serial.println("\ntesting current 1");
       Gen_courant.Gen_courant_1_start();
-      Courant1_Reference_test = Gen_courant.get_courant_1();
-
+      courant1.Courant1_Reference_test = Gen_courant.get_courant_1();
       /* * */
-      Courant1_Reference_test = 76.7; // a modifier apres aec la vrai valeur
+      courant1.Courant1_Reference_test = 76.7; // a modifier apres aec la vrai valeur
       /* * */
-
       float Chlore_Turboxy = turboxy.GET_CHLORE() / 100;
-      display.current(Chlore_Turboxy, Courant1_Reference_test);
+      display.current(Chlore_Turboxy, courant1.Courant1_Reference_test);
 
       if (Chlore_Turboxy >= 0) // -1 = error communication
       {
+        courant1.tableval[test_current1_count] = Chlore_Turboxy;
+
         Serial.print("le courant de Turboxy est ");
         Serial.print(Chlore_Turboxy, 5);
         Serial.print(" et celle generé est ");
-        Serial.println(Courant1_Reference_test);
-        if (Chlore_Turboxy > Courant1_Reference_test + 5 || Chlore_Turboxy < Courant1_Reference_test - 5) // 3 c'est l'erreur accepté ici
+        Serial.println(courant1.Courant1_Reference_test);
+
+        // 5 is the acceptable error here
+        if (abs(Chlore_Turboxy - courant1.Courant1_Reference_test) > tolerence_courant)
         {
-          Test_courant1_Valid = 0;
+          courant1.Test_courant1_Valid = 0;
           Serial.println("test courant 1 non Valid");
         }
         else
         {
-          Test_courant1_Valid = 1;
+          courant1.Test_courant1_Valid = 1;
           Serial.println("****************test courant 1 Valid");
         }
-        somme_moyenne_courant_1 += Chlore_Turboxy;
+
         test_current1_count++;
       }
       else
@@ -233,14 +245,14 @@ void loop()
 
   case 31:
   {
-    static uint32_t nextTime31 = 0;
+    static unsigned long nextTime31 = 0;
     static uint8_t time_count = 0;
 
     if (millis() - nextTime31 >= interval_display)
     {
       nextTime31 = millis();
       Serial.println("waiting for test to start");
-      display.courant_validation(Courant1_Reference_test, validation_courant_1_finale);
+      display.courant_validation(courant1.moyenne, courant1.validation_courant_1_finale);
       time_count++;
     }
 
@@ -254,61 +266,68 @@ void loop()
 
   case 4:
   {
-    static float somme_moyenne_courant_2 = 0;
+
     static uint8_t test_current2_count = 0;
+    static unsigned long nextTime3 = 0;
+
     Gen_courant.Gen_courant_1_stop();
-    static uint32_t nextTime3 = 0;
-    float Courant2_Reference_test = 0;
 
     if (test_current2_count >= nbr_de_mesures_courant)
     {
-      if (somme_moyenne_courant_2 / nbr_de_mesures_courant > Courant2_Reference_test + 5 || somme_moyenne_courant_2 / nbr_de_mesures_courant < Courant2_Reference_test - 5)
+      Serial.println("+++++++++++++++++++++++++++++++++++++++++");
+      for (uint8_t i = 2; i <= courant2.nbr_values; i++)
       {
-        validation_courant_2_finale = 0;
+        courant2.somme_moyenne_courant_2 += courant2.tableval[i];
+        Serial.println(courant2.somme_moyenne_courant_2);
+      }
+      courant2.moyenne = courant2.somme_moyenne_courant_2 / (courant2.nbr_values - 2);
+
+      Serial.println(courant2.moyenne, 5);
+
+      if (abs(courant2.moyenne - courant2.Courant2_Reference_test) > tolerence_courant + 5)
+      {
+        courant2.validation_courant_2_finale = 0;
       }
       else
       {
-        validation_courant_2_finale = 1;
+        courant2.validation_courant_2_finale = 1;
       }
       etape_test_I_T = 0x41;
       test_current2_count = 0;
-      somme_moyenne_courant_2 = 0;
+      courant2.somme_moyenne_courant_2 = 0;
     }
     else if (millis() - nextTime3 >= interval_wait_current)
     {
       nextTime3 = millis();
       Serial.println("\ntesting current 2");
       Gen_courant.Gen_courant_2_start();
-      Courant2_Reference_test = Gen_courant.get_courant_2();
+      courant2.Courant2_Reference_test = Gen_courant.get_courant_2();
+      /* * */
+      courant2.Courant2_Reference_test = 220; // a modifier apres aec la vrai valeur
+      /* * */
       float Courant_Turboxy = turboxy.GET_CHLORE() / 100;
 
-      /* * */
-
-      Courant2_Reference_test = 220; // a modifier apres aec la vrai valeur
-
-      /* * */
-
-      display.current(Courant_Turboxy, Courant2_Reference_test);
+      display.current(Courant_Turboxy, courant2.Courant2_Reference_test);
 
       if (Courant_Turboxy >= 0) // -1 = error communication
       {
+        courant2.tableval[test_current2_count] = Courant_Turboxy;
+        test_current2_count++; // Increment count
+
         Serial.print("le courant de Turboxy est ");
         Serial.print(Courant_Turboxy, 5);
         Serial.print(" et celle generé est ");
-        Serial.println(Courant2_Reference_test);
-        if (Courant_Turboxy > Courant2_Reference_test + 5 || Courant_Turboxy < Courant2_Reference_test - 5)
+        Serial.println(courant2.Courant2_Reference_test);
+        if (abs(Courant_Turboxy - courant2.Courant2_Reference_test) > tolerence_courant)
         {
-          Test_courant2_Valid = 0;
+          courant2.Test_courant2_Valid = 0;
           Serial.println("test courant 2 non Valid");
         }
         else
         {
-          Test_courant2_Valid = 1;
+          courant2.Test_courant2_Valid = 1;
           Serial.println("****************test courant 2 Valid");
         }
-        somme_moyenne_courant_2 += Courant_Turboxy;
-
-        test_current2_count++; // Increment count
       }
       else
       {
@@ -327,13 +346,13 @@ void loop()
 
   case 0x41:
   {
-    static uint32_t nextTime41 = 0;
+    static unsigned long nextTime41 = 0;
     static uint8_t time_count = 0;
     if (millis() - nextTime41 >= interval_display)
     {
-      nextTime41 += millis();
+      nextTime41 = millis();
       Serial.println("waiting for test to start");
-      display.courant_validation(Courant2_Reference_test, validation_courant_2_finale);
+      display.courant_validation(courant2.moyenne, courant2.validation_courant_2_finale);
       time_count++;
     }
 
@@ -349,8 +368,27 @@ void loop()
     Gen_courant.Gen_courant_1_stop();
     Gen_courant.Gen_courant_2_stop();
     servo_sonde.move_in_place(servo_position_repos);
-    etape_test_I_T = 0;
+    etape_test_I_T = 111;
     problem_com_turboxy = 0;
+  }
+  break;
+  case 111:
+  {
+    static unsigned long nexttime_display = 0;
+    static uint8_t seconds_since_display = 0;
+
+    if (millis() - nexttime_display >= interval_display)
+    {
+      nexttime_display = millis();
+      display.affichage_resultats(temperature.valid, courant1.validation_courant_1_finale, courant2.validation_courant_2_finale);
+      seconds_since_display++;
+    }
+
+    if (seconds_since_display >= 10)
+    {
+      etape_test_I_T = 0;
+      seconds_since_display = 0;
+    }
   }
   break;
 
@@ -384,7 +422,7 @@ void loop()
     display.pressbutton_2();
     Electrovanne.IN_OFF();
     Electrovanne.OUT_OFF();
-    static uint32_t nextTime0_0 = 0;
+    static unsigned long nextTime0_0 = 0;
 
     if (millis() - nextTime0_0 >= interval_wait_message_pressure_button)
     {
@@ -404,21 +442,28 @@ void loop()
   break;
   case 1:
   {
-    static uint32_t nextTime0_1 = 0;
+    static uint8_t pressure_wait_count = 0;
+    static unsigned long nextTime0_1 = 0;
     if (millis() - nextTime0_1 >= interval_wait_pressure_increase)
     {
       nextTime0_1 = millis();
+      display.fillingair();
+      Serial.println("filling the Air");
+      Electrovanne.IN_ON();
+      Electrovanne.OUT_OFF();
+      pressure_wait_count++;
     }
-    Serial.println("filling the Air");
-    Electrovanne.IN_ON();
-    Electrovanne.OUT_OFF();
-
-    etape_test_flux = 2;
+    if (pressure_wait_count >= 3)
+    {
+      etape_test_flux = 2;
+      pressure_wait_count = 0;
+    }
   }
   break;
+
   case 2:
   {
-    static uint32_t nextTime0_2 = 0;
+    static unsigned long nextTime0_2 = 0;
     if (millis() - nextTime0_2 >= interval_wait_positioning_valves)
     {
       nextTime0_2 = millis();
@@ -427,8 +472,9 @@ void loop()
     Serial.println("start testing pressure");
     Electrovanne.IN_OFF();
     Electrovanne.OUT_OFF();
-    delay(1);
+
     etape_test_flux = 3;
+    pressure_delta.pressure_start = Pressure_Sensor.get_pressure_Bar();
   }
   break;
   case 3:
@@ -439,7 +485,7 @@ void loop()
     Electrovanne.IN_OFF();
     Electrovanne.OUT_OFF();
 
-    static uint32_t nextTime0_3 = 0;
+    static unsigned long nextTime0_3 = 0;
     if (millis() - nextTime0_3 >= interval_wait_pressure)
     {
       nextTime0_3 = millis();
@@ -451,10 +497,98 @@ void loop()
       Serial.println(" mBar");
       pressure_mesure_count++;
     }
-    if (pressure_mesure_count >= 10)
+
+    if (pressure_mesure_count >= nbr_of_pressur_test)
     {
-      etape_test_flux = 4;
+      etape_test_flux = 31;
       pressure_mesure_count = 0;
+      pressure_delta.pressure_end = Pressure_Sensor.get_pressure_Bar();
+
+      pressure_delta.delta = pressure_delta.pressure_start - pressure_delta.pressure_start;
+      if (abs(pressure_delta.delta) >= 100)
+      {
+        pressure_delta.pression_valid = 1;
+      }
+    }
+  }
+  break;
+
+  case 31:
+  {
+    static unsigned long caseStartTime = 0; // Variable to store the start time of the current case
+    // Check if it's the first time entering this case
+    if (caseStartTime == 0)
+    {
+      // Record the start time
+      caseStartTime = millis();
+    }
+    // Display pressure validation
+    display.pression_validation(pressure_delta.delta, pressure_delta.pression_valid);
+    // Check if 5 seconds have passed
+    if (millis() - caseStartTime >= 5000)
+    { // 5000 milliseconds = 5 seconds
+      // Reset the start time for the next time this case is entered
+      caseStartTime = 0;
+      etape_test_flux = 4;
+    }
+  }
+  break;
+  case 4:
+  {
+    static unsigned long lastTestTime = 0;
+    if (millis() - lastTestTime >= 1000)
+    {
+      lastTestTime = millis(); // Update the last test time
+      Electrovanne.IN_ON();
+      Electrovanne.OUT_ON();
+      freq_test.frequency[freq_test.testCount] = turboxy.GET_FREQUENCY();
+
+      // Check if the frequency is closer to the reference value
+      if (abs(freq_test.frequency[freq_test.testCount] - freq_test.reference) <= freq_test.delta_reference)
+      {
+        freq_test.valid = true; // Frequency is valid
+      }
+      else
+      {
+        freq_test.valid = false; // Frequency is not valid
+      }
+
+      freq_test.testCount++;
+
+      // Check if all tests are completed
+      if (freq_test.testCount >= 10)
+      {
+        // All tests completed, perform validation or other actions here
+        // Reset test count and any other necessary variables for the next set of tests
+        freq_test.testCount = 0;
+        etape_test_flux = 41;
+      }
+    }
+  }
+  break;
+
+  case 41:
+  {
+    static uint32_t validationStartTime = 0;
+    static bool validationDisplayed = false;
+
+    // Check if it's time to display the validation
+    if (!validationDisplayed)
+    {
+      validationStartTime = millis();
+      validationDisplayed = true;
+    }
+
+    if (millis() - validationStartTime < 5000)
+    {
+      // Display frequency validation
+      display.frequency_validation(freq_test.frequency[10], freq_test.valid);
+    }
+    else
+    {
+      // 5 seconds have passed, reset variables and transition to the next state
+      validationDisplayed = false;
+      etape_test_flux = 0; // Transition to the initial state
     }
   }
   break;
