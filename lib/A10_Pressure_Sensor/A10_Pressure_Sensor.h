@@ -18,7 +18,7 @@ public:
     A10_Pressure_Sensor(/* args */);
     uint16_t get_ADC_num();
     float get_Voltage_mV();
-    float get_pressure_Bar();
+    float get_pressure_mBar();
 };
 
 #endif

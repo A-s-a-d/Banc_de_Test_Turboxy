@@ -38,6 +38,7 @@ public:
     void pression_validation(float delta, bool valid);
     void frequency_validation(uint8_t frequency, bool valid);
     void affichage_resultats(bool valid_temp, bool valid_courant1, bool valid_courant2);
+    void testing_frequency(float frequency);
 
 private:
     Adafruit_SSD1306 display;

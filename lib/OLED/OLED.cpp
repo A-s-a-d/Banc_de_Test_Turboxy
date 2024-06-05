@@ -1,5 +1,6 @@
 #include "oled.h"
 #include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeSans9pt7b.h>
 
 // 'logo-horizontal-crop-reduit', 128x64px
 const unsigned char epd_bitmap_logo_horizontal_crop_reduit[] PROGMEM = {
@@ -150,6 +151,7 @@ void Oled::temperature(float temperature_turboxy, float temperature_capteur)
 
     display.display();
 }
+
 void Oled::temperature_validation(bool valid)
 {
     if (valid == 0)
@@ -348,16 +350,16 @@ void Oled::pressure(float pression_depart, float pression_actuelle)
     display_2.setCursor(6, 42);
     display_2.setTextSize(1);
     display_2.print(pression_depart, 1);
-    display_2.print(" bar");
+    display_2.print("mbar");
 
     display_2.setCursor(70, 18);
     display_2.setTextSize(1);
     display_2.print("Actuelle:");
 
-    display_2.setCursor(70, 42);
+    display_2.setCursor(65, 42);
     display_2.setTextSize(1);
     display_2.print(pression_actuelle, 1);
-    display_2.print(" bar");
+    display_2.print("mbar");
 
     display_2.display();
 }
@@ -373,6 +375,19 @@ void Oled::fillingair()
     display_2.display();
 }
 
+void Oled::testing_frequency(float frequency)
+{
+    display_2.clearDisplay();
+    display_2.setFont();
+    display_2.setTextSize(2);
+    display_2.setTextColor(SSD1306_WHITE);
+    display_2.setCursor(0, 0);
+    display_2.print("Frequency\n");
+    display_2.print(frequency);
+    display_2.print(" Hz");
+    display_2.display();
+}
+
 void Oled::pression_validation(float delta, bool valid)
 {
     display_2.clearDisplay();
@@ -380,8 +395,9 @@ void Oled::pression_validation(float delta, bool valid)
     display_2.setTextSize(2);
     display_2.setTextColor(SSD1306_WHITE);
     display_2.setCursor(0, 0);
-    display_2.print("delta :");
+    display_2.print("delta:\n");
     display_2.print(delta, 2);
+    display_2.print("mBar");
 
     if (valid == 1)
     {
@@ -423,37 +439,41 @@ void Oled::frequency_validation(uint8_t frequency, bool valid)
 
 void Oled::affichage_resultats(bool valid_temp, bool valid_courant1, bool valid_courant2)
 {
+
     display.clearDisplay();
-    display.setFont();
+    display.setFont(&FreeSans9pt7b);
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0, 0);
+    display.setCursor(0, 12);
 
     if (valid_temp == 1)
     {
-        display.print("Temp valid");
+        display.print("Temp");
+        display.print((char)247);
+        display.print("OK");
     }
     else
     {
-        display.print("Temp valid");
+        display.print("Temp xx");
     }
 
     if (valid_courant1 == 1)
     {
-        display.print("\ncourant1 Valid");
+        display.print("\nCourant1 OK");
     }
     else
     {
-        display.print("\ncourant1 non Valid");
+        display.print("\nCourant1 XX");
     }
 
     if (valid_courant2 == 1)
     {
-        display.print("\ncourant2 valid");
+        display.print("\nCourant2 OK");
     }
     else
     {
-        display.print("\ncourant2 non valid");
+        display.print("\nCourant2 XX");
     }
     display.display();
+    display.setFont();
 }

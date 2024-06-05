@@ -421,6 +421,7 @@ void loop()
   {
     display.pressbutton_2();
     Electrovanne.IN_OFF();
+    delay(4000); // a enlever
     Electrovanne.OUT_OFF();
     static unsigned long nextTime0_0 = 0;
 
@@ -474,7 +475,7 @@ void loop()
     Electrovanne.OUT_OFF();
 
     etape_test_flux = 3;
-    pressure_delta.pressure_start = Pressure_Sensor.get_pressure_Bar();
+    pressure_delta.pressure_start = Pressure_Sensor.get_pressure_mBar();
   }
   break;
   case 3:
@@ -490,8 +491,8 @@ void loop()
     {
       nextTime0_3 = millis();
       Serial.println("testing pressure");
-      Pressure = Pressure_Sensor.get_pressure_Bar();
-      display.pressure(2.0, Pressure / 1000.0);
+      Pressure = Pressure_Sensor.get_pressure_mBar();
+      display.pressure(pressure_delta.pressure_start, Pressure);
       Serial.print("La pression est: ");
       Serial.print(Pressure);
       Serial.println(" mBar");
@@ -502,12 +503,19 @@ void loop()
     {
       etape_test_flux = 31;
       pressure_mesure_count = 0;
-      pressure_delta.pressure_end = Pressure_Sensor.get_pressure_Bar();
+      pressure_delta.pressure_end = Pressure_Sensor.get_pressure_mBar();
 
-      pressure_delta.delta = pressure_delta.pressure_start - pressure_delta.pressure_start;
-      if (abs(pressure_delta.delta) >= 100)
+      pressure_delta.delta = pressure_delta.pressure_start - pressure_delta.pressure_end;
+      Serial.println("-------------------------------------------");
+      Serial.println(pressure_delta.delta);
+      if (abs(pressure_delta.delta) <= pressure_delta.erreur_accceptable)
       {
+
         pressure_delta.pression_valid = 1;
+      }
+      else
+      {
+        pressure_delta.pression_valid = 0;
       }
     }
   }
@@ -540,8 +548,11 @@ void loop()
     {
       lastTestTime = millis(); // Update the last test time
       Electrovanne.IN_ON();
+      delay(4000); // a enlever
       Electrovanne.OUT_ON();
       freq_test.frequency[freq_test.testCount] = turboxy.GET_FREQUENCY();
+
+      display.testing_frequency(freq_test.frequency[freq_test.testCount]);
 
       // Check if the frequency is closer to the reference value
       if (abs(freq_test.frequency[freq_test.testCount] - freq_test.reference) <= freq_test.delta_reference)

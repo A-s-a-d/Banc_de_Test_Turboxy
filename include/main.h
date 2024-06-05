@@ -53,6 +53,7 @@ struct pressure_delta
     float pressure_end;
     float delta;
     bool pression_valid;
+    const float erreur_accceptable = 200;
 
     /* data */
 } pressure_delta;

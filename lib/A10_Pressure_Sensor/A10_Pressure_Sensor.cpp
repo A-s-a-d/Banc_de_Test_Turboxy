@@ -15,7 +15,7 @@ float A10_Pressure_Sensor::get_Voltage_mV()
 {
     _Voltage_mV = quantum_ADC * _Num_VADC_PRESSURE; // variable qui stocke la valeur de tension lu.
 }
-float A10_Pressure_Sensor::get_pressure_Bar()
+float A10_Pressure_Sensor::get_pressure_mBar()
 {
     get_ADC_num();
     delay(1);
