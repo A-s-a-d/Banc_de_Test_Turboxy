@@ -419,12 +419,41 @@ void loop()
   {
   case 0:
   {
-    display.pressbutton_2();
-    Electrovanne.IN_OFF();
-    delay(4000); // a enlever
-    Electrovanne.OUT_OFF();
-    static unsigned long nextTime0_0 = 0;
+    //   display.pressbutton_2();
+    // // Call IN_OFF and record the current time
+    // Electrovanne.IN_OFF();
+    // static unsigned long inOffTime = 0;
+    // // Use a timer to wait for 4 seconds before calling OUT_OFF
+    // static bool outOffCalled = false;
+    // if (millis() - inOffTime >= 4000) // (!outOffCalled && millis() - inOffTime >= 4000)
+    // {
+    //   inOffTime = millis();
+    //   Electrovanne.OUT_OFF();
+    //   outOffCalled = true;
+    // }
 
+    static bool inOffCalled = false;
+    static unsigned long inOffTime = 0;
+
+    // Call IN_OFF and record the current time if not already called
+    if (!inOffCalled)
+    {
+      display.pressbutton_2();
+      Electrovanne.OUT_OFF();
+
+      inOffTime = millis();
+      inOffCalled = true;
+    }
+
+    // Use a timer to wait for 4 seconds before calling OUT_OFF
+    if (inOffCalled && millis() - inOffTime >= 4000)
+    {
+      Electrovanne.IN_OFF();
+
+      inOffCalled = false; // Reset for next cycle
+    }
+
+    static unsigned long nextTime0_0 = 0;
     if (millis() - nextTime0_0 >= interval_wait_message_pressure_button)
     {
       nextTime0_0 = millis();
@@ -543,37 +572,31 @@ void loop()
   break;
   case 4:
   {
+
+    Electrovanne.IN_ON();
+    delay(1000); // a enlever
+    Electrovanne.OUT_ON();
+
     static unsigned long lastTestTime = 0;
     if (millis() - lastTestTime >= 1000)
     {
       lastTestTime = millis(); // Update the last test time
-      Electrovanne.IN_ON();
-      delay(4000); // a enlever
-      Electrovanne.OUT_ON();
+
       freq_test.frequency[freq_test.testCount] = turboxy.GET_FREQUENCY();
+      freq_test.last_frequency = freq_test.frequency[freq_test.testCount];
 
       display.testing_frequency(freq_test.frequency[freq_test.testCount]);
-
-      // Check if the frequency is closer to the reference value
-      if (abs(freq_test.frequency[freq_test.testCount] - freq_test.reference) <= freq_test.delta_reference)
-      {
-        freq_test.valid = true; // Frequency is valid
-      }
-      else
-      {
-        freq_test.valid = false; // Frequency is not valid
-      }
-
       freq_test.testCount++;
 
       // Check if all tests are completed
-      if (freq_test.testCount >= 10)
-      {
-        // All tests completed, perform validation or other actions here
-        // Reset test count and any other necessary variables for the next set of tests
-        freq_test.testCount = 0;
-        etape_test_flux = 41;
-      }
+    }
+
+    if (freq_test.testCount >= 5)
+    {
+      // All tests completed, perform validation or other actions here
+      // Reset test count and any other necessary variables for the next set of tests
+      freq_test.testCount = 0;
+      etape_test_flux = 41;
     }
   }
   break;
@@ -590,10 +613,26 @@ void loop()
       validationDisplayed = true;
     }
 
+    // for (uint8_t i = 0; i <= sizeof(freq_test.frequency) - 1; i++) // moyenne
+    // {
+    //   freq_test.moyenne += freq_test.frequency[i];
+    // }
+    // freq_test.moyenne = freq_test.moyenne / sizeof(freq_test.frequency);
+
+    // Check if the frequency is closer to the reference value
+    if (freq_test.last_frequency > 0 /*abs(freq_test.last_frequency - freq_test.reference) <= freq_test.delta_reference*/)
+    {
+      freq_test.valid = true; // Frequency is valid
+    }
+    else
+    {
+      freq_test.valid = false; // Frequency is not valid
+    }
+
     if (millis() - validationStartTime < 5000)
     {
       // Display frequency validation
-      display.frequency_validation(freq_test.frequency[10], freq_test.valid);
+      display.frequency_validation(freq_test.last_frequency, freq_test.valid);
     }
     else
     {

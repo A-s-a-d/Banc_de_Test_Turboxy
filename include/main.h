@@ -63,9 +63,11 @@ struct freq_test
     float frequency[10]; // Array to store frequency values;
     uint8_t reference = 50;
     bool valid = 0;
-    const uint8_t delta_reference = 20;
+    const uint8_t delta_reference = 50;
     uint8_t delta;
     uint8_t testCount = 0;
+    float moyenne;
+    float last_frequency;
 } freq_test;
 
 struct temperature

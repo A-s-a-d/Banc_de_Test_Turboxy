@@ -382,7 +382,7 @@ void Oled::testing_frequency(float frequency)
     display_2.setTextSize(2);
     display_2.setTextColor(SSD1306_WHITE);
     display_2.setCursor(0, 0);
-    display_2.print("Frequency\n");
+    display_2.print("Freq\n");
     display_2.print(frequency);
     display_2.print(" Hz");
     display_2.display();
@@ -420,18 +420,19 @@ void Oled::frequency_validation(uint8_t frequency, bool valid)
     display_2.setTextSize(2);
     display_2.setTextColor(SSD1306_WHITE);
     display_2.setCursor(0, 0);
-    display_2.print("frequency :\n");
+    display_2.print("freq:\n");
     display_2.print(frequency);
+    display_2.print(" HZ");
 
     if (valid == 1)
     {
         display_2.setCursor(0, 40);
-        display_2.print("Valid");
+        display_2.print(" OK");
     }
     else
     {
         display_2.setCursor(0, 40);
-        display_2.print("non Valid");
+        display_2.print(" xxx");
     }
 
     display_2.display();
